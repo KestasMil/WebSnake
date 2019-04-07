@@ -118,6 +118,6 @@ const webSnake = (function() {
    * Public Properties
    */
   return {
-
+    
   }
 })();
