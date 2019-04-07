@@ -4,7 +4,7 @@ const webSnake = (function() {
    */
   const snakeCanvas = document.querySelector('.snake-canvas');
   //Number of segments to display in canvas horizontaly (this defines how big segments will be). (default = 10)
-  let horizontalSegCount = 20;
+  let horizontalSegCount = 50;
   //Based on horizontalSegCount calculate the size of one segment horizontally.
   let segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
   //Calculate maximum number of segments fitting vertically.
@@ -16,25 +16,29 @@ const webSnake = (function() {
    * SETUP.
    */
   let snakeHead = {};
-  let snakeBody = [];
+  let snakeTail = [];
   let direction = 'RIGHT';
-  let speed = 100;
+  let speed = 50;
 
   /**
    * Hookup input
    */
   window.addEventListener('keydown', function(e){
     switch (e.key) {
-      case 'w' || 'ArrowUp':
+      case 'ArrowUp':
+      case 'w':
         direction = 'UP';
         break;
-      case 's' || 'ArrowDown':
+      case 'ArrowDown':
+      case 's':
         direction = 'DOWN';
         break;
-      case 'a' || 'ArrowLeft':
+      case 'ArrowLeft':
+      case 'a':
         direction = 'LEFT';
         break;
-      case 'd' || 'ArrowRight':
+      case 'ArrowRight':
+      case 'd':
         direction = 'RIGHT';
         break;
       default:
