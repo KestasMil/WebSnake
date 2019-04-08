@@ -4,7 +4,7 @@ const webSnake = (function() {
    */
   const snakeCanvas = document.querySelector('.snake-canvas');
   //Number of segments to display in canvas horizontaly (this defines how big segments will be). (default = 10)
-  let horizontalSegCount = 50;
+  let horizontalSegCount = 20;
   //Based on horizontalSegCount calculate the size of one segment horizontally.
   let segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
   //Calculate maximum number of segments fitting vertically.
@@ -17,8 +17,9 @@ const webSnake = (function() {
    */
   let snakeHead = {};
   let snakeTail = [];
+  let snakeFood = {};
   let direction = 'RIGHT';
-  let speed = 50;
+  let speed = 200;
 
   /**
    * Hookup input
@@ -57,10 +58,12 @@ const webSnake = (function() {
    */
   initCanvas();
   snakeHead = initHead();
+  snakeFood = InitFood();
 
   // Game loop
   setInterval(function(){
     MoveHead();
+    CheckForCollision();
     UpdateCanvas();
   }, speed);
 
@@ -83,7 +86,7 @@ const webSnake = (function() {
     headSeg.style.top = `${ySeg * segSizeHeight}px`;
     // Append to canvas
     snakeCanvas.appendChild(headSeg);
-    return {xSeg: 3, ySeg: 3, segEl: headSeg};
+    return {xSeg: xSeg, ySeg: ySeg, segEl: headSeg};
   }
 
   function initCanvas() {
@@ -91,8 +94,45 @@ const webSnake = (function() {
   }
 
   function UpdateCanvas() {
+    // Update snake heads position
     snakeHead.segEl.style.left = `${snakeHead.xSeg * segSizeWidth}px`;
     snakeHead.segEl.style.top = `${snakeHead.ySeg * segSizeHeight}px`;
+    // Update foods position
+    snakeFood.segEl.style.left = `${snakeFood.xSeg * segSizeWidth}px`;
+    snakeFood.segEl.style.top = `${snakeFood.ySeg * segSizeHeight}px`;
+  }
+
+  function CheckForCollision() {
+      // Collision with head
+      if ((snakeHead.xSeg === snakeFood.xSeg) && (snakeHead.ySeg === snakeFood.ySeg)) {
+        RandomiseFood();
+      }
+  }
+
+  function RandomiseFood() {
+    snakeFood.xSeg = Math.floor(Math.random() * (horizontalSegCount));
+    snakeFood.ySeg = Math.floor(Math.random() * (verticalSegCount));
+  }
+
+  function InitFood() {
+    // Create element
+    let sf = document.createElement('div');
+    // Style segment
+    sf.style.width = `${segSizeWidth}px`;
+    sf.style.height = `${segSizeHeight}px`;
+    sf.style.backgroundColor = '#ffbbcc';
+    // Positioning
+    sf.style.position = 'absolute';
+    // Coordinates
+    let xSeg = Math.floor(Math.random() * (horizontalSegCount));
+    let ySeg = Math.floor(Math.random() * (verticalSegCount));
+    console.log(xSeg, ySeg);
+    // Update heads position
+    sf.style.left = `${xSeg * segSizeWidth}px`;
+    sf.style.top = `${ySeg * segSizeHeight}px`;
+    // Append to canvas
+    snakeCanvas.appendChild(sf);
+    return {xSeg: xSeg, ySeg: ySeg, segEl: sf};
   }
 
   function MoveHead() {
@@ -118,6 +158,6 @@ const webSnake = (function() {
    * Public Properties
    */
   return {
-    
+
   }
 })();
