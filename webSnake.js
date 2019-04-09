@@ -31,19 +31,19 @@ const webSnake = (function() {
     switch (e.key) {
       case 'ArrowUp':
       case 'w':
-        direction = 'UP';
+        direction = (direction === 'DOWN') ? 'DOWN' : 'UP';
         break;
       case 'ArrowDown':
       case 's':
-        direction = 'DOWN';
+        direction = (direction === 'UP') ? 'UP' : 'DOWN';
         break;
       case 'ArrowLeft':
       case 'a':
-        direction = 'LEFT';
+        direction = (direction === 'RIGHT') ? 'RIGHT' : 'LEFT';
         break;
       case 'ArrowRight':
       case 'd':
-        direction = 'RIGHT';
+        direction = (direction === 'LEFT') ? 'LEFT' : 'RIGHT';
         break;
       default:
         break;
