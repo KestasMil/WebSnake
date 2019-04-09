@@ -4,7 +4,7 @@ const webSnake = (function() {
    */
   const snakeCanvas = document.querySelector('.snake-canvas');
   //Number of segments to display in canvas horizontaly (this defines how big segments will be). (default = 10)
-  let horizontalSegCount = 20;
+  let horizontalSegCount = 50;
   //Based on horizontalSegCount calculate the size of one segment horizontally.
   let segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
   //Calculate maximum number of segments fitting vertically.
@@ -19,7 +19,7 @@ const webSnake = (function() {
   let snakeTail = [];
   let snakeFood = {};
   let direction = 'RIGHT';
-  let speed = 200;
+  let speed = 20;
   //Test com
 
   /**
@@ -48,95 +48,138 @@ const webSnake = (function() {
     }
   });
 
-
-  /** Debugging things. */
-  console.log('Seg Width', segSizeWidth);
-  console.log('Count Vertically', verticalSegCount);
-  console.log('Seg Height', segSizeHeight);
-
   /**
    * Initialize Game
    */
   initCanvas();
   snakeHead = initHead();
-  snakeFood = InitFood();
+  snakeTail = initTail(1, 'L'); //tail with 5 segments. 'L' - all segments to the left of the head. (L, R, A, B)
+  snakeFood = initFood();
+  // Update tail's segmens coordinates, required after initializing tail for the first time (and on canvas resize).
+  updateTailSegmentationCoords();
 
   // Game loop
   setInterval(function(){
-    MoveHead();
-    CheckForCollision();
-    UpdateCanvas();
+    moveSnake();
+    checkForFood();
+    updateCanvas();
   }, speed);
 
   /**
    * Functions
    */
+  function initTail(numOfSegments, direction) {
+    let result = [];
+    for (let i = 0; i < numOfSegments; i++) {
+      result.push({loc: direction, xSeg: 0, ySeg: 0, segEl: null});
+    }
+    return result;
+  }
+
   function initHead() {
-    // Create snake segment
-    let headSeg = document.createElement('div');
-    // Style segment
-    headSeg.style.width = `${segSizeWidth}px`;
-    headSeg.style.height = `${segSizeHeight}px`;
-    headSeg.style.backgroundColor = '#ffbbcc';
-    // Positioning
-    headSeg.style.position = 'absolute';
-    // Coordinates
-    let xSeg = 3, ySeg = 3;
-    // Update heads position
-    headSeg.style.left = `${xSeg * segSizeWidth}px`;
-    headSeg.style.top = `${ySeg * segSizeHeight}px`;
-    // Append to canvas
-    snakeCanvas.appendChild(headSeg);
-    return {xSeg: xSeg, ySeg: ySeg, segEl: headSeg};
+    xSeg = Math.floor(Math.random() * (horizontalSegCount));
+    ySeg = Math.floor(Math.random() * (verticalSegCount));
+    return {xSeg: xSeg, ySeg: ySeg, segEl: null};
+  }
+
+  function initFood() {
+    xSeg = Math.floor(Math.random() * (horizontalSegCount));
+    ySeg = Math.floor(Math.random() * (verticalSegCount));
+    return {xSeg: xSeg, ySeg: ySeg, segEl: null};
   }
 
   function initCanvas() {
     snakeCanvas.style.position = 'relative';
   }
 
-  function UpdateCanvas() {
+  // This function only needs to be called when position of tail segments is required to be calculated
+  // in case canvas was resized. Function is also used just after tail is instantiated or grown.
+  function updateTailSegmentationCoords() {
+    let tempCoords = { x: snakeHead.xSeg, y: snakeHead.ySeg };
+    snakeTail.forEach(element => {
+      // Set new segment coorditane for tail segment
+      switch (element.loc) {
+        case 'L':
+          element.xSeg = (tempCoords.x > 0) ? tempCoords.x-1 : horizontalSegCount-1;
+          element.ySeg = tempCoords.y;
+          break;
+        case 'R':
+          element.xSeg = (tempCoords.x < horizontalSegCount-1) ? tempCoords.x+1 : 0;
+          element.ySeg = tempCoords.y;
+          break;
+        case 'A':
+          element.ySeg = (tempCoords.y > 0) ? tempCoords.y-1 : verticalSegCount-1;
+          element.xSeg = tempCoords.x;
+          break;
+        case 'B':
+          element.ySeg = (tempCoords.y < verticalSegCount-1) ? tempCoords.y+1 : 0;
+          element.xSeg = tempCoords.x;
+          break;
+      
+        default:
+          break;
+      }
+      // Set temp coords to current elements coordinates
+      tempCoords.x = element.xSeg;
+      tempCoords.y = element.ySeg;
+    });
+  }
+
+  function createSegmentElementAt(xSeg, ySeg) {
+    // Create snake segment
+    let segmentDiv = document.createElement('div');
+    // Style segment
+    segmentDiv.style.width = `${segSizeWidth}px`;
+    segmentDiv.style.height = `${segSizeHeight}px`;
+    segmentDiv.style.backgroundColor = '#ffbbcc';
+    // Update position
+    segmentDiv.style.position = 'absolute';
+    segmentDiv.style.left = `${xSeg * segSizeWidth}px`;
+    segmentDiv.style.top = `${ySeg * segSizeHeight}px`;
+    // Append to canvas
+    snakeCanvas.appendChild(segmentDiv);
+    return segmentDiv;
+  }
+
+  function updateCanvas() {
     // Update snake heads position
+    if(!snakeHead.segEl) snakeHead.segEl = createSegmentElementAt(snakeHead.xSeg, snakeHead.ySeg);
     snakeHead.segEl.style.left = `${snakeHead.xSeg * segSizeWidth}px`;
     snakeHead.segEl.style.top = `${snakeHead.ySeg * segSizeHeight}px`;
     // Update foods position
+    if(!snakeFood.segEl) snakeFood.segEl = createSegmentElementAt(snakeFood.xSeg, snakeFood.ySeg);
     snakeFood.segEl.style.left = `${snakeFood.xSeg * segSizeWidth}px`;
     snakeFood.segEl.style.top = `${snakeFood.ySeg * segSizeHeight}px`;
+    // Update tails position
+    snakeTail.forEach(tailSeg => {
+      if(!tailSeg.segEl) tailSeg.segEl = createSegmentElementAt(tailSeg.xSeg, tailSeg.ySeg);
+      tailSeg.segEl.style.left = `${tailSeg.xSeg * segSizeWidth}px`;
+      tailSeg.segEl.style.top = `${tailSeg.ySeg * segSizeHeight}px`;
+    });
   }
 
-  function CheckForCollision() {
+  function checkForFood() {
       // Collision with head
       if ((snakeHead.xSeg === snakeFood.xSeg) && (snakeHead.ySeg === snakeFood.ySeg)) {
-        RandomiseFood();
+        randomiseFood();
+        growTail();
       }
   }
 
-  function RandomiseFood() {
+  function growTail() {
+    let x = snakeTail[snakeTail.length-1];
+    let cpyObj = {loc: x.loc, xSeg: x.xSeg, ySeg: x.ySeg, segEl: null};
+    snakeTail.push(cpyObj);
+  }
+
+  function randomiseFood() {
     snakeFood.xSeg = Math.floor(Math.random() * (horizontalSegCount));
     snakeFood.ySeg = Math.floor(Math.random() * (verticalSegCount));
   }
 
-  function InitFood() {
-    // Create element
-    let sf = document.createElement('div');
-    // Style segment
-    sf.style.width = `${segSizeWidth}px`;
-    sf.style.height = `${segSizeHeight}px`;
-    sf.style.backgroundColor = '#ffbbcc';
-    // Positioning
-    sf.style.position = 'absolute';
-    // Coordinates
-    let xSeg = Math.floor(Math.random() * (horizontalSegCount));
-    let ySeg = Math.floor(Math.random() * (verticalSegCount));
-    console.log(xSeg, ySeg);
-    // Update heads position
-    sf.style.left = `${xSeg * segSizeWidth}px`;
-    sf.style.top = `${ySeg * segSizeHeight}px`;
-    // Append to canvas
-    snakeCanvas.appendChild(sf);
-    return {xSeg: xSeg, ySeg: ySeg, segEl: sf};
-  }
-
-  function MoveHead() {
+  function moveSnake() {
+    let oldPos = { x: snakeHead.xSeg, y: snakeHead.ySeg };
+    // Move Head
     switch (direction) {
       case 'UP':
         snakeHead.ySeg = (snakeHead.ySeg === 0) ? verticalSegCount-1 : snakeHead.ySeg-1;
@@ -152,6 +195,30 @@ const webSnake = (function() {
         break;
       default:
         break;
+    }
+    let newPos = { x: snakeHead.xSeg, y: snakeHead.ySeg };
+    // Move Tail
+    let tempPos;
+    for (let i = 0; i < snakeTail.length; i++) {
+      const tailSeg = snakeTail[i];
+      tempPos = { x: tailSeg.xSeg, y: tailSeg.ySeg };
+      tailSeg.xSeg = oldPos.x;
+      tailSeg.ySeg = oldPos.y;
+      oldPos.x = tempPos.x;
+      oldPos.y = tempPos.y;
+      // Update orientation value (L/R/A/B) according to segments possition that is at the front of the current segment.
+      if ((tailSeg.xSeg+1 === newPos.x) && (tailSeg.ySeg === newPos.y)) {
+        tailSeg.loc = 'L'; //on the Left
+      } else if ((tailSeg.xSeg-1 === newPos.x) && (tailSeg.ySeg === newPos.y)) {
+        tailSeg.loc = 'R'; //on the Right
+      } else if ((tailSeg.xSeg === newPos.x) && (tailSeg.ySeg+1 === newPos.y)) {
+        tailSeg.loc = 'A'; //Above
+      } else if ((tailSeg.xSeg === newPos.x) && (tailSeg.ySeg-1 === newPos.y)) {
+        tailSeg.loc = 'B'; //Below
+      }
+      // Set newPos
+      newPos.x = tailSeg.xSeg;
+      newPos.y = tailSeg.ySeg;
     }
   }
 
