@@ -4,7 +4,7 @@ const webSnake = (function() {
    */
   const snakeCanvas = document.querySelector('.snake-canvas');
   //Number of segments to display in canvas horizontaly (this defines how big segments will be). (default = 10)
-  let horizontalSegCount = 50;
+  let horizontalSegCount = 20;
   //Based on horizontalSegCount calculate the size of one segment horizontally.
   let segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
   //Calculate maximum number of segments fitting vertically.
@@ -13,18 +13,18 @@ const webSnake = (function() {
   let segSizeHeight = snakeCanvas.clientHeight / verticalSegCount;
 
   /**
-   * SETUP.
+   * GLOBAL VARS
    */
   let snakeHead = {};
   let snakeTail = [];
   let snakeFood = {};
   let direction = 'RIGHT';
-  let speed = 20;
-  //Test com
+  let speed = 150;
 
   /**
-   * Hookup input
+   * Hookup input and set Canvas position to relative.
    */
+  initCanvas();
   window.addEventListener('keydown', function(e){
     switch (e.key) {
       case 'ArrowUp':
@@ -47,23 +47,34 @@ const webSnake = (function() {
         break;
     }
   });
+  RestartGame();
 
   /**
-   * Initialize Game
+   * Public Fields and Methods
    */
-  initCanvas();
-  snakeHead = initHead();
-  snakeTail = initTail(1, 'L'); //tail with 5 segments. 'L' - all segments to the left of the head. (L, R, A, B)
-  snakeFood = initFood();
-  // Update tail's segmens coordinates, required after initializing tail for the first time (and on canvas resize).
-  updateTailSegmentationCoords();
+  function RestartGame() {
+    // Clear canvas
+    snakeCanvas.innerHTML = '';
 
-  // Game loop
-  setInterval(function(){
-    moveSnake();
-    checkForFood();
-    updateCanvas();
+    // Initialize global variables
+    snakeHead = initHead();
+    snakeTail = initTail(1, 'L'); //tail with 5 segments. 'L' - all segments to the left of the head. (L, R, A, B)
+    snakeFood = initFood();
+    
+    // Update tail's segmens coordinates, required after initializing tail for the first time (and on canvas resize).
+    updateTailSegmentationCoords();
+
+    //Start Game loop
+    let intervalPointer = setInterval(function(){
+      moveSnake();
+      checkForFood();
+      if (checkForCollision()) {
+        clearInterval(intervalPointer);
+        RestartGame();
+      }
+      updateCanvas();
   }, speed);
+  }
 
   /**
    * Functions
@@ -90,6 +101,17 @@ const webSnake = (function() {
 
   function initCanvas() {
     snakeCanvas.style.position = 'relative';
+  }
+
+  // Check for collision
+  function checkForCollision() {
+    let ret = false;
+    snakeTail.forEach(tailEl => {
+      if (tailEl.xSeg === snakeHead.xSeg && tailEl.ySeg === snakeHead.ySeg) {
+        ret = true;
+      }
+    });
+    return ret;
   }
 
   // This function only needs to be called when position of tail segments is required to be calculated
