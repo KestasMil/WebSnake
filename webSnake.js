@@ -4,7 +4,7 @@ const webSnake = (function() {
    */
   const snakeCanvas = document.querySelector('.snake-canvas');
   //Number of segments to display in canvas horizontaly (this defines how big segments will be). (default = 10)
-  let horizontalSegCount = 20;
+  let horizontalSegCount = 10;
   //Based on horizontalSegCount calculate the size of one segment horizontally.
   let segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
   //Calculate maximum number of segments fitting vertically.
@@ -175,7 +175,7 @@ const webSnake = (function() {
     // Style segment
     segmentDiv.style.width = `${segSizeWidth}px`;
     segmentDiv.style.height = `${segSizeHeight}px`;
-    segmentDiv.style.backgroundColor = '#ffbbcc';
+    segmentDiv.style.backgroundColor = '#000000';
     // Update position
     segmentDiv.style.position = 'absolute';
     segmentDiv.style.left = `${xSeg * segSizeWidth}px`;
@@ -191,7 +191,11 @@ const webSnake = (function() {
     snakeHead.segEl.style.left = `${snakeHead.xSeg * segSizeWidth}px`;
     snakeHead.segEl.style.top = `${snakeHead.ySeg * segSizeHeight}px`;
     // Update foods position
-    if(!snakeFood.segEl) snakeFood.segEl = createSegmentElementAt(snakeFood.xSeg, snakeFood.ySeg);
+    if(!snakeFood.segEl) {
+      snakeFood.segEl = createSegmentElementAt(snakeFood.xSeg, snakeFood.ySeg);
+      //Override color of food after it's created.
+      snakeFood.segEl.style.backgroundColor = '#ffcf00';
+    }
     snakeFood.segEl.style.left = `${snakeFood.xSeg * segSizeWidth}px`;
     snakeFood.segEl.style.top = `${snakeFood.ySeg * segSizeHeight}px`;
     // Update tails position
@@ -219,6 +223,17 @@ const webSnake = (function() {
   function randomiseFood() {
     snakeFood.xSeg = Math.floor(Math.random() * (horizontalSegCount));
     snakeFood.ySeg = Math.floor(Math.random() * (verticalSegCount));
+
+    let colided = false;
+    snakeTail.forEach(tailEl => {
+      if (tailEl.xSeg === snakeFood.xSeg && tailEl.ySeg === snakeFood.ySeg) {
+        colided = true;
+      }
+    });
+
+    if (snakeHead.xSeg === snakeFood.xSeg && snakeHead.ySeg === snakeFood.ySeg) colided = true;
+
+    if (colided) randomiseFood();
   }
 
   function recalculateValues() {
