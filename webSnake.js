@@ -20,6 +20,7 @@ const webSnake = (function() {
   let snakeFood = {};
   let direction = 'RIGHT';
   let speed = 200;
+  //Test com
 
   /**
    * Hookup input
