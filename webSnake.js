@@ -12,9 +12,8 @@ const webSnake = (function() {
   //Based on verticalSegCount calculate the size of one segment vertically.
   let segSizeHeight = snakeCanvas.clientHeight / verticalSegCount;
 
-  /**
-   * GLOBAL VARIABLES
-   */
+  let canvasSize = {xSize: snakeCanvas.clientWidth, ySize: snakeCanvas.clientHeight};
+
   let snakeHead = {};
   let snakeTail = [];
   let snakeFood = {};
@@ -222,7 +221,38 @@ const webSnake = (function() {
     snakeFood.ySeg = Math.floor(Math.random() * (verticalSegCount));
   }
 
+  function recalculateValues() {
+    // Check if canvas has not changes, if it did recalculate variables required
+    if (canvasSize.xSize !== snakeCanvas.clientWidth || canvasSize.ySize !== snakeCanvas.clientHeight) {
+      segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
+      verticalSegCount = Number.parseInt(snakeCanvas.clientHeight / segSizeWidth);
+      segSizeHeight = snakeCanvas.clientHeight / verticalSegCount;
+
+      // Clear canvas
+      snakeCanvas.innerHTML = '';
+
+      // Update size and location of snakes tail
+      canvasSize = {xSize: snakeCanvas.clientWidth, ySize: snakeCanvas.clientHeight};
+      for (let i = 0; i < snakeTail.length; i++) {
+        snakeTail[i].segEl = null;
+      }
+
+      // Update location and size of snakes head
+      snakeHead.segEl = null;
+      if (snakeHead.xSeg > horizontalSegCount-1) snakeHead.xSeg = horizontalSegCount-1;
+      if (snakeHead.ySeg > verticalSegCount-1) snakeHead.ySeg = verticalSegCount-1;
+
+      // Update size and location of snakes food
+      snakeFood.segEl = null;
+      if (snakeFood.xSeg > horizontalSegCount-1) snakeFood.xSeg = horizontalSegCount-1;
+      if (snakeFood.ySeg > verticalSegCount-1) snakeFood.ySeg = verticalSegCount-1;
+
+      updateTailSegmentationCoords();
+    }
+  }
+
   function moveSnake() {
+    recalculateValues();
     let oldPos = { x: snakeHead.xSeg, y: snakeHead.ySeg };
     // Move Head
     switch (direction) {
