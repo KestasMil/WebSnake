@@ -13,13 +13,15 @@ const webSnake = (function() {
   let segSizeHeight = snakeCanvas.clientHeight / verticalSegCount;
 
   /**
-   * GLOBAL VARS
+   * GLOBAL VARIABLES
    */
   let snakeHead = {};
   let snakeTail = [];
   let snakeFood = {};
   let direction = 'RIGHT';
   let speed = 150;
+  let intervalPointer;
+
 
   /**
    * Hookup input and set Canvas position to relative.
@@ -47,12 +49,15 @@ const webSnake = (function() {
         break;
     }
   });
+
   RestartGame();
 
   /**
    * Public Fields and Methods
    */
   function RestartGame() {
+    // Clear game loop interval
+    clearInterval(intervalPointer);
     // Clear canvas
     snakeCanvas.innerHTML = '';
 
@@ -60,12 +65,12 @@ const webSnake = (function() {
     snakeHead = initHead();
     snakeTail = initTail(1, 'L'); //tail with 5 segments. 'L' - all segments to the left of the head. (L, R, A, B)
     snakeFood = initFood();
-    
+
     // Update tail's segmens coordinates, required after initializing tail for the first time (and on canvas resize).
     updateTailSegmentationCoords();
 
     //Start Game loop
-    let intervalPointer = setInterval(function(){
+    intervalPointer = setInterval(function(){
       moveSnake();
       checkForFood();
       if (checkForCollision()) {
@@ -73,7 +78,25 @@ const webSnake = (function() {
         RestartGame();
       }
       updateCanvas();
-  }, speed);
+    }, speed);
+  }
+
+  function ChangeGameSpeed(newSpeed) {
+    speed = newSpeed;
+
+    // Clear game loop interval
+    clearInterval(intervalPointer);
+
+    //Start Game loop
+    intervalPointer = setInterval(function(){
+      moveSnake();
+      checkForFood();
+      if (checkForCollision()) {
+        clearInterval(intervalPointer);
+        RestartGame();
+      }
+      updateCanvas();
+    }, speed);
   }
 
   /**
@@ -248,6 +271,7 @@ const webSnake = (function() {
    * Public Properties
    */
   return {
-
+    RestartGame: RestartGame,
+    SetGameSpeed: ChangeGameSpeed
   }
 })();
