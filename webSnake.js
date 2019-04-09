@@ -3,12 +3,14 @@ const webSnake = (function() {
    * Main variables defining the parameters of the game.
    */
   const snakeCanvas = document.querySelector('.snake-canvas');
-  //Number of segments to display in canvas horizontaly (this defines how big segments will be). (default = 10)
-  let horizontalSegCount = 10;
+  //Size of the segment (square dimensions aprox.)
+  let segSize = 20;
+  //Number of segments to display in canvas horizontaly (to fill canvas without gaps).
+  let horizontalSegCount = Number.parseInt(snakeCanvas.clientWidth / segSize);
+  //Calculate maximum number of segments fitting vertically (to fill canvas without gaps).
+  let verticalSegCount = Number.parseInt(snakeCanvas.clientHeight / segSize);
   //Based on horizontalSegCount calculate the size of one segment horizontally.
   let segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
-  //Calculate maximum number of segments fitting vertically.
-  let verticalSegCount = Number.parseInt(snakeCanvas.clientHeight / segSizeWidth);
   //Based on verticalSegCount calculate the size of one segment vertically.
   let segSizeHeight = snakeCanvas.clientHeight / verticalSegCount;
 
@@ -239,8 +241,9 @@ const webSnake = (function() {
   function recalculateValues() {
     // Check if canvas has not changes, if it did recalculate variables required
     if (canvasSize.xSize !== snakeCanvas.clientWidth || canvasSize.ySize !== snakeCanvas.clientHeight) {
+      horizontalSegCount = Number.parseInt(snakeCanvas.clientWidth / segSize);
+      verticalSegCount = Number.parseInt(snakeCanvas.clientHeight / segSize);
       segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
-      verticalSegCount = Number.parseInt(snakeCanvas.clientHeight / segSizeWidth);
       segSizeHeight = snakeCanvas.clientHeight / verticalSegCount;
 
       // Clear canvas
