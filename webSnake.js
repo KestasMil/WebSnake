@@ -17,6 +17,7 @@ const webSnake = (function(canvasSelector) {
   let snakeFood = {};
   // Game state
   let direction;
+  let initialDirection;
   let speed;
   let startingSegs;
   // Game loop timer (pointer)
@@ -62,6 +63,7 @@ const webSnake = (function(canvasSelector) {
       startingSegs = 5
     } = params);
     initCanvas(canvasSelector);
+    initialDirection = direction;
     //Calc max number of segments to display in canvas horizontaly (to fill canvas without gaps).
     horizontalSegCount = Number.parseInt(snakeCanvas.clientWidth / segSize);
     //Calculate maximum number of segments fitting vertically (to fill canvas without gaps).
@@ -74,6 +76,7 @@ const webSnake = (function(canvasSelector) {
 
   function RestartGame() {
     stopGameLoop();
+    direction = initialDirection;
     // Clear canvas
     snakeCanvas.innerHTML = '';
     // Initialize game objects.
@@ -89,6 +92,11 @@ const webSnake = (function(canvasSelector) {
     speed = newSpeed;
     stopGameLoop();
     startGameLoop();
+  }
+
+  function ChangeSegmentSize(newSize) {
+    segSize = newSize;
+    recalculateValues();
   }
 
   /**
@@ -249,8 +257,6 @@ const webSnake = (function(canvasSelector) {
   }
 
   function recalculateValues() {
-    // Check if canvas has not changes, if it did recalculate variables required
-    if (canvasSize.xSize !== snakeCanvas.clientWidth || canvasSize.ySize !== snakeCanvas.clientHeight) {
       horizontalSegCount = Number.parseInt(snakeCanvas.clientWidth / segSize);
       verticalSegCount = Number.parseInt(snakeCanvas.clientHeight / segSize);
       segSizeWidth = snakeCanvas.clientWidth / horizontalSegCount;
@@ -275,11 +281,13 @@ const webSnake = (function(canvasSelector) {
       if (snakeFood.ySeg > verticalSegCount-1) snakeFood.ySeg = verticalSegCount-1;
 
       updateTailSegmentationCoords();
-    }
   }
 
   function moveSnake() {
-    recalculateValues();
+    // Check if canvas has not changes, if it did recalculate variables required
+    if (canvasSize.xSize !== snakeCanvas.clientWidth || canvasSize.ySize !== snakeCanvas.clientHeight) {
+      recalculateValues();
+    }
     let oldPos = { x: snakeHead.xSeg, y: snakeHead.ySeg };
     // Move Head
     switch (direction) {
@@ -330,6 +338,7 @@ const webSnake = (function(canvasSelector) {
   return {
     InitGame: InitGame,
     RestartGame: RestartGame,
-    SetGameSpeed: ChangeGameSpeed
+    SetGameSpeed: ChangeGameSpeed,
+    SetSegmentSize: ChangeSegmentSize
   }
 })();
