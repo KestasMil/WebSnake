@@ -3,8 +3,9 @@ const webSnake = (function() {
    * Main variables defining the parameters of the game.
    */
   const snakeCanvas = document.querySelector('.snake-canvas');
+  let canvasSize = {xSize: snakeCanvas.clientWidth, ySize: snakeCanvas.clientHeight};
   //Size of the segment (square dimensions aprox.)
-  let segSize = 20;
+  let segSize = 5;
   //Number of segments to display in canvas horizontaly (to fill canvas without gaps).
   let horizontalSegCount = Number.parseInt(snakeCanvas.clientWidth / segSize);
   //Calculate maximum number of segments fitting vertically (to fill canvas without gaps).
@@ -14,13 +15,11 @@ const webSnake = (function() {
   //Based on verticalSegCount calculate the size of one segment vertically.
   let segSizeHeight = snakeCanvas.clientHeight / verticalSegCount;
 
-  let canvasSize = {xSize: snakeCanvas.clientWidth, ySize: snakeCanvas.clientHeight};
-
   let snakeHead = {};
   let snakeTail = [];
   let snakeFood = {};
   let direction = 'RIGHT';
-  let speed = 150;
+  let speed = 50;
   let intervalPointer;
 
 
