@@ -12,9 +12,8 @@ html, body {
   margin-right: auto;
 }
 
-.slidecontainer {
+.game-container {
   width: 600px;
-  height: 400px;
   margin-left: auto;
   margin-right: auto;
 }

@@ -5,16 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="demo.css">
+  <link rel="stylesheet" href="slide.css">
   <title>WebSnake</title>
 </head>
 <body>
   <div class="spacer"></div>
+  <div class="game-container">
   <div class="snake-canvas"></div>
   <div class="slidecontainer">
-    <div class="slider_lbl">Speed: <span id="speed">100</span></div>
-    <input type="range" min="10" max="200" value="100" class="slider" id="mySpeedRange">
-    <div class="slider_lbl">Segment Size: <span id="seg-Size">50</span></div>
-    <input type="range" min="5" max="100" value="50" class="slider" id="mySegSize">
+      <div class="slider_lbl">Speed: <span id="speed">15</span></div>
+      <input type="range" min="1" max="60" value="15" class="slider" id="mySpeedRange">
+      <div class="slider_lbl">Segment Size: <span id="seg-Size">20</span></div>
+      <input type="range" min="5" max="50" value="20" class="slider" id="mySegSize">
+  </div>
   </div>
   <script src="webSnake.js"></script>
   <script src="demo.js"></script>

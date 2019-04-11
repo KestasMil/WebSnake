@@ -1,11 +1,11 @@
 webSnake.InitGame('.snake-canvas', {
-  segSize: 15,
-  speed: 80
+  segSize: 20,
+  speed: 60
 });
 webSnake.RestartGame();
 
 document.querySelector('#mySpeedRange').oninput = function() {
-  webSnake.SetGameSpeed(this.value);
+  webSnake.SetGameSpeed(900 / this.value);
   document.querySelector('#speed').textContent = this.value;
 }
 
