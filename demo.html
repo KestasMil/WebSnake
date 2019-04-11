@@ -8,7 +8,14 @@
   <title>WebSnake</title>
 </head>
 <body>
+  <div class="spacer"></div>
   <div class="snake-canvas"></div>
+  <div class="slidecontainer">
+    <div class="slider_lbl">Speed: <span id="speed">100</span></div>
+    <input type="range" min="10" max="200" value="100" class="slider" id="mySpeedRange">
+    <div class="slider_lbl">Segment Size: <span id="seg-Size">50</span></div>
+    <input type="range" min="5" max="100" value="50" class="slider" id="mySegSize">
+  </div>
   <script src="webSnake.js"></script>
   <script src="demo.js"></script>
 </body>
