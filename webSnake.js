@@ -192,6 +192,7 @@ const webSnake = (function(canvasSelector) {
   function createSegmentElementAt(xSeg, ySeg) {
     // Create snake segment
     let segmentDiv = document.createElement('div');
+    segmentDiv.className = "snake-segment";
     // Style segment
     segmentDiv.style.width = `${segSizeWidth}px`;
     segmentDiv.style.height = `${segSizeHeight}px`;
