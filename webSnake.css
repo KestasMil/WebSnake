@@ -1,0 +1,11 @@
+.snake-segment {
+  background-color: rgb(195, 255, 127);
+  border: 1px solid #ffffff;
+  border-radius: 5px;
+}
+
+.snake-food {
+  background-color: rgb(255, 94, 0);
+  border: 2px solid rgb(255, 255, 255);
+  border-radius: 50px;
+}

@@ -20,6 +20,8 @@ const webSnake = (function(canvasSelector) {
   let initialDirection;
   let speed;
   let startingSegs;
+  let foodClassName;
+  let segmentClassName;
   // Game loop timer (pointer)
   let intervalPointer;
 
@@ -60,7 +62,9 @@ const webSnake = (function(canvasSelector) {
       segSize=10,
       speed=1000,
       direction = 'RIGHT',
-      startingSegs = 5
+      startingSegs = 5,
+      segmentClassName = "",
+      foodClassName = ""
     } = params);
     initCanvas(canvasSelector);
     initialDirection = direction;
@@ -194,9 +198,14 @@ const webSnake = (function(canvasSelector) {
     let segmentDiv = document.createElement('div');
     segmentDiv.className = "snake-segment";
     // Style segment
+    //--mandatory styles
     segmentDiv.style.width = `${segSizeWidth}px`;
     segmentDiv.style.height = `${segSizeHeight}px`;
-    segmentDiv.style.backgroundColor = '#000000';
+    segmentDiv.style.boxSizing = "border-box";
+    //--default styles
+    if (segmentClassName == "") {
+      segmentDiv.style.backgroundColor = '#000000';
+    }
     // Update position
     segmentDiv.style.position = 'absolute';
     segmentDiv.style.left = `${xSeg * segSizeWidth}px`;
@@ -215,7 +224,11 @@ const webSnake = (function(canvasSelector) {
     if(!snakeFood.segEl) {
       snakeFood.segEl = createSegmentElementAt(snakeFood.xSeg, snakeFood.ySeg);
       //Override color of food after it's created.
-      snakeFood.segEl.style.backgroundColor = '#ffcf00';
+      if (foodClassName == "") {
+        snakeFood.segEl.style.backgroundColor = '#ffcf00';
+      } else {
+        snakeFood.segEl.className = foodClassName;
+      }
     }
     snakeFood.segEl.style.left = `${snakeFood.xSeg * segSizeWidth}px`;
     snakeFood.segEl.style.top = `${snakeFood.ySeg * segSizeHeight}px`;

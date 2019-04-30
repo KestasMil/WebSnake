@@ -1,6 +1,8 @@
 webSnake.InitGame('.snake-canvas', {
   segSize: 20,
-  speed: 60
+  speed: 60,
+  segmentClassName: "snake-segment",
+  foodClassName: "snake-food"
 });
 webSnake.RestartGame();
 
