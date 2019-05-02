@@ -346,6 +346,36 @@ const webSnake = (function(canvasSelector) {
     }
   }
 
+  function GetPlayAreaMatrix() {
+    let matrix = [];
+    // Create empty matrix
+    for (let index = 0; index < verticalSegCount; index++) {
+      let h = [];
+      for (let index = 0; index < horizontalSegCount; index++) {
+        h.push(0);
+      }
+      matrix.push(h);
+    }
+
+    // Set body coords
+    snakeTail.forEach(seg => {
+      matrix[seg.ySeg][seg.xSeg] = 1;
+    });
+
+    // Return play area state object
+    return {
+      Matrix: matrix,
+      headPos: {
+        y: snakeHead.ySeg,
+        x: snakeHead.xSeg
+      },
+      foodPos: {
+        y: snakeFood.ySeg,
+        x: snakeFood.xSeg
+      }
+    };
+  }
+
   /**
    * Public Properties
    */
