@@ -1,5 +1,5 @@
-.slidecontainer {
-  width: 40%;
+.slide-container {
+  width: 300px;
   margin-top: 15px;
 }
 
@@ -25,7 +25,7 @@
   width: 20px;
   height: 20px;
   border-radius: 20%;
-  background: rgb(73, 73, 73);
+  background: #9ceb68;
   cursor: pointer;
 }
 

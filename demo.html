@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,18 +10,31 @@
   <link rel="stylesheet" href="webSnake.css">
   <title>WebSnake</title>
 </head>
+
 <body>
   <div class="spacer"></div>
   <div class="game-container">
-  <div class="snake-canvas"></div>
-  <div class="slidecontainer">
-      <div class="slider_lbl">Speed: <span id="speed">15</span></div>
-      <input type="range" min="1" max="60" value="15" class="slider" id="mySpeedRange">
-      <div class="slider_lbl">Segment Size: <span id="seg-Size">20</span></div>
-      <input type="range" min="5" max="50" value="20" class="slider" id="mySegSize">
-  </div>
+    <div class="snake-canvas"></div>
+    <div class="controlls-container">
+      <div class="left-container">
+        <div class="score-container">
+          <div>Current Score: <span id="score">0</span></div>
+          <div>High Score: <span id="high-score">0</span></div>
+        </div>
+        <div class="slide-container">
+          <div class="slider_lbl">Speed: <span id="speed">15</span></div>
+          <input type="range" min="1" max="60" value="15" class="slider" id="mySpeedRange">
+          <div class="slider_lbl">Segment Size: <span id="seg-Size">20</span></div>
+          <input type="range" min="5" max="50" value="20" class="slider" id="mySegSize">
+        </div>
+      </div>
+      <div class="right-container">
+        <div class="btn-container"><button class="snake-btn-off" id="toggle-autoplay">AutoPlay OFF</button></div>
+      </div>
+    </div>
   </div>
   <script src="webSnake.js"></script>
   <script src="demo.js"></script>
 </body>
+
 </html>
