@@ -22,8 +22,13 @@ const webSnake = (function(canvasSelector) {
   let startingSegs;
   let foodClassName;
   let segmentClassName;
+  let AutoPilotEnabled = false;
+  let CurrentScore = 0;
+  let HighScore = 0;
   // Game loop timer (pointer)
   let intervalPointer;
+  // Subsciber functions to score updates
+  let OnScoreChangedSubs = [];
 
 
   /**
@@ -103,15 +108,24 @@ const webSnake = (function(canvasSelector) {
     recalculateValues();
   }
 
+  function OnScoreChanged(func) {
+    OnScoreChangedSubs.push(func);
+  }
+
   /**
    * Functions
    */
   function startGameLoop() {
     //Start Game loop
     intervalPointer = setInterval(function(){
+      if (AutoPilotEnabled) {
+        let directionToGo = GetDirectionToFood();
+        if(directionToGo != 0) direction = directionToGo;        
+      }
       moveSnake();
       checkForFood();
       if (checkForCollision()) {
+        UpdateScore(0);
         clearInterval(intervalPointer);
         RestartGame();
       }
@@ -243,6 +257,7 @@ const webSnake = (function(canvasSelector) {
   function checkForFood() {
       // Collision with head
       if ((snakeHead.xSeg === snakeFood.xSeg) && (snakeHead.ySeg === snakeFood.ySeg)) {
+        UpdateScore(CurrentScore+1);
         randomiseFood();
         growTail();
       }
@@ -346,12 +361,252 @@ const webSnake = (function(canvasSelector) {
     }
   }
 
+  function UpdateScore(current) {
+    CurrentScore = current;
+    if (CurrentScore > HighScore) HighScore = CurrentScore;
+
+    OnScoreChangedSubs.forEach(f => {
+      f({CurrentScore: CurrentScore, HighScore: HighScore});
+    });
+  }
+
+  //=========================
+  // AUTOPILOT IMPLEMENTATION
+  //=========================
+  function GetDirectionToFood() {
+    // Test Matrix
+    /*let Matrix = [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];*/
+    // Get Play Area Matrix
+    let Matrix = GetPlayAreaMatrix();
+  
+    // To - That's snake head's possition, end point of the algorythm.
+    let To = {x: snakeHead.xSeg, y: snakeHead.ySeg};
+    // From - location of food, that's the starting point of the algorythm.
+    // approachingFrom - 0 not set, 1 - left, 2 - top, 3 - right, 4 - bottom.
+    let From = {x: snakeFood.xSeg, y: snakeFood.ySeg, approachingFrom: 0};  
+  
+    // Copy of play are matrix
+    let Mtrx = Matrix;
+  
+    // Size of the matrix
+    MtrxWidth = Mtrx[0].length;
+    MtrxHeight = Mtrx.length;
+  
+    // Shortest possible distance to target
+    let ShortestDistance = 999999;
+    // Shortest possible distance to target found
+    let ShortestDistanceFound = false;
+
+    // Longest available distance to travel to (in case food is not reachable at the moment)
+    let LongestDistance = 0;
+    let ApproachedLDFrom = 0;
+  
+    // Counter of itterations
+    let itCounter = 0;
+    // Max itterations allowed
+    let maxItterations = 100000;
+  
+    // Side target (To) was approached from
+    let ApproachedFrom = 0;
+  
+    // Trigger search algorithm
+    var t0 = performance.now();
+    SetCellsDistances([From], 1);
+    var t1 = performance.now();
+
+    // TEST BLOCK
+    /*console.log("Itterations: ", itCounter);
+    console.log("Path Length: " + ShortestDistance);
+    console.log("Approached From: " + ApproachedFrom);
+    console.log(Mtrx);
+    console.log("Time taken: " + (t1 - t0) + " milliseconds.");*/
+    // --- END OF TEST BLOCK ---
+  
+    // RETURN THE RESULT
+    // Return direction to food if food is not blocked
+    if (ApproachedFrom != 0) {
+      if (ApproachedFrom == 1) return "LEFT";
+      if (ApproachedFrom == 3) return "RIGHT";
+      if (ApproachedFrom == 2) return "UP";
+      if (ApproachedFrom == 4) return "DOWN";
+      if (ApproachedFrom == 0) return 0;
+    } else {
+      // Calculate direction to the furthest available cell and return direction to it
+      Mtrx[snakeHead.ySeg][snakeHead.xSeg] = -1;
+      let ld = 0;
+      let goTo = 0;
+      To = {x: snakeFood.xSeg, y: snakeFood.ySeg};
+      // Up dist
+      if (direction != "DOWN") {
+        let FromHead = {x: snakeHead.xSeg, y: snakeHead.ySeg, approachingFrom: 0};
+        if (FromHead.y == 0) {
+          FromHead.y = MtrxHeight-1;
+        } else {
+          FromHead.y = FromHead.y - 1;
+        }
+        if (Mtrx[FromHead.y][FromHead.x] !== -1) {
+          SetCellsDistances([FromHead], 1);
+          if (LongestDistance > ld) {
+            ld = LongestDistance;
+            goTo = "UP";
+          }
+        }
+      }
+      // Down dist
+      if (direction != "UP") {
+        FromHead = {x: snakeHead.xSeg, y: snakeHead.ySeg, approachingFrom: 0};
+        if (FromHead.y == MtrxHeight-1) {
+          FromHead.y = 0;
+        } else {
+          FromHead.y = FromHead.y + 1;
+        }
+        if (Mtrx[FromHead.y][FromHead.x] !== -1) {
+          SetCellsDistances([FromHead], 1);
+          if (LongestDistance > ld) {
+            ld = LongestDistance;
+            goTo = "DOWN";
+          }
+        }
+      }
+      // Left dist
+      if (direction != "RIGHT") {
+        FromHead = {x: snakeHead.xSeg, y: snakeHead.ySeg, approachingFrom: 0};
+        if (FromHead.x == 0) {
+          FromHead.x = MtrxWidth-1;
+        } else {
+          FromHead.x = FromHead.x - 1;
+        }
+        if (Mtrx[FromHead.y][FromHead.x] !== -1) {
+          SetCellsDistances([FromHead], 1);
+          if (LongestDistance > ld) {
+            ld = LongestDistance;
+            goTo = "LEFT";
+          }
+        }
+      }
+      // Right dist
+        if (direction != "LEFT") {
+        FromHead = {x: snakeHead.xSeg, y: snakeHead.ySeg, approachingFrom: 0};
+        if (FromHead.x == MtrxWidth-1) {
+          FromHead.x = 0;
+        } else {
+          FromHead.x = FromHead.x + 1;
+        }
+        if (Mtrx[FromHead.y][FromHead.x] !== -1) {
+          SetCellsDistances([FromHead], 1);
+          if (LongestDistance > ld) {
+            ld = LongestDistance;
+            goTo = "RIGHT";
+          }
+        }
+      }
+      return goTo;
+    }
+  
+    // Local function/algorithm to calculate distance to food
+    function SetCellsDistances(cells, distance) {
+      let newCells = [];
+      if (ShortestDistanceFound) return;
+      
+      cells.forEach(cell => {
+        if (ShortestDistanceFound) return;
+        itCounter++;
+        // Check if food reached and return if true
+        if (cell.y == To.y && cell.x == To.x) {
+          if (ShortestDistance > distance) ShortestDistance = distance;
+          ShortestDistanceFound = true;
+          ApproachedFrom = cell.approachingFrom;
+          return;
+        } else {
+          // Set longest distance in case food is not reachable we will return that
+          if (LongestDistance < distance) {
+            LongestDistance = distance;
+            ApproachedLDFrom = cell.approachingFrom;
+          }
+        }
+    
+        // Set distance value if cell distance greater than distance and cell not -1 (-1 are blocked cells)
+        if (Mtrx[cell.y][cell.x] !== -1 || Mtrx[cell.y][cell.x] > distance) 
+        {
+          Mtrx[cell.y][cell.x] = distance;
+    
+          // Add Adjacent cells to array to be checked next
+          // Left
+          let cl = {};
+          cl.x = cell.x;
+          cl.y = cell.y;
+          cl.approachingFrom = 3; // 3 - right
+          if (cell.x == 0) {
+            cl.x = MtrxWidth-1;
+          } else {
+            cl.x = cell.x - 1;
+          }
+          if (Mtrx[cl.y][cl.x] !== -1 && (Mtrx[cl.y][cl.x] > distance+1 || Mtrx[cl.y][cl.x] == 0)) {
+            if(newCells.filter(function(value){ return (value.x == cl.x && value.y == cl.y); }).length == 0) newCells.push(cl);
+          }
+          // Right
+          cl = {};
+          cl.x = cell.x;
+          cl.y = cell.y;
+          cl.approachingFrom = 1; // 1 - left
+          if (cell.x == MtrxWidth-1) {
+            cl.x = 0;
+          } else {
+            cl.x = cell.x + 1;
+          }
+          if (Mtrx[cl.y][cl.x] !== -1 && (Mtrx[cl.y][cl.x] > distance+1 || Mtrx[cl.y][cl.x] == 0)) {
+            if(newCells.filter(function(value){ return (value.x == cl.x && value.y == cl.y); }).length == 0) newCells.push(cl);
+          }
+          // Up
+          cl = {};
+          cl.x = cell.x;
+          cl.y = cell.y;
+          cl.approachingFrom = 4; // 4 - bottom
+          if (cell.y == 0) {
+            cl.y = MtrxHeight-1;
+          } else {
+            cl.y = cell.y - 1;
+          }
+          if (Mtrx[cl.y][cl.x] !== -1 && (Mtrx[cl.y][cl.x] > distance+1 || Mtrx[cl.y][cl.x] == 0)) {
+            if(newCells.filter(function(value){ return (value.x == cl.x && value.y == cl.y); }).length == 0) newCells.push(cl);
+          }
+          // Down
+          cl = {};
+          cl.x = cell.x;
+          cl.y = cell.y;
+          cl.approachingFrom = 2; // 2 - above
+          if (cell.y == MtrxHeight - 1) {
+            cl.y = 0;
+          } else {
+            cl.y = cell.y + 1;
+          }
+          if (Mtrx[cl.y][cl.x] !== -1 && (Mtrx[cl.y][cl.x] > distance+1 || Mtrx[cl.y][cl.x] == 0)) {
+            if(newCells.filter(function(value){ return (value.x == cl.x && value.y == cl.y); }).length == 0) newCells.push(cl);
+          }
+        }
+    
+      });
+      if (newCells.length > 0) SetCellsDistances(newCells, distance+1);
+    }
+  }
+
   function GetPlayAreaMatrix() {
     let matrix = [];
     // Create empty matrix
-    for (let index = 0; index < verticalSegCount; index++) {
+    for (let i = 0; i < verticalSegCount; i++) {
       let h = [];
-      for (let index = 0; index < horizontalSegCount; index++) {
+      for (let j = 0; j < horizontalSegCount; j++) {
         h.push(0);
       }
       matrix.push(h);
@@ -359,22 +614,19 @@ const webSnake = (function(canvasSelector) {
 
     // Set body coords
     snakeTail.forEach(seg => {
-      matrix[seg.ySeg][seg.xSeg] = 1;
+      matrix[seg.ySeg][seg.xSeg] = -1;
     });
 
-    // Return play area state object
-    return {
-      Matrix: matrix,
-      headPos: {
-        y: snakeHead.ySeg,
-        x: snakeHead.xSeg
-      },
-      foodPos: {
-        y: snakeFood.ySeg,
-        x: snakeFood.xSeg
-      }
-    };
+    // Return play are matrix
+    return matrix;
   }
+
+  function ToggleAutoPilot() {
+    AutoPilotEnabled = !AutoPilotEnabled;
+  }
+  //===============================
+  //END OF AUTOPILOT IMPLEMENTATION
+  //===============================
 
   /**
    * Public Properties
@@ -383,6 +635,8 @@ const webSnake = (function(canvasSelector) {
     InitGame: InitGame,
     RestartGame: RestartGame,
     SetGameSpeed: ChangeGameSpeed,
-    SetSegmentSize: ChangeSegmentSize
+    SetSegmentSize: ChangeSegmentSize,
+    ToggleAutoPilot: ToggleAutoPilot,
+    OnScoreChanged: OnScoreChanged
   }
 })();
